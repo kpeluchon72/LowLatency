@@ -6,6 +6,7 @@
 #include "workload.hpp"
 #include <vector>
 #include "benchmark.hpp"
+#include "pricing2.hpp"
 
 int main() {
     constexpr double tolerance = 1e-9;
@@ -208,6 +209,34 @@ int main() {
         std::cerr << "Summary checksum test failed\n";
         return 1;
     }
+
+
+    option.type = OptionType::Call;
+
+    const pricing2::PreparedOption preparedCall =
+        pricing2::prepare(option);
+
+    const double pricing2Call =
+        pricing2::price(100.0, preparedCall);
+
+    if (std::abs(actualCall - pricing2Call) > tolerance) {
+        std::cerr << "Pricing 2 call failed. Actualcall: " << actualCall << " Pricing 2 Call: " << pricing2Call << '\n';
+        return 1;
+    }
+
+    option.type = OptionType::Put;
+
+    const pricing2::PreparedOption preparedPut =
+        pricing2::prepare(option);
+
+    const double pricing2Put =
+        pricing2::price(100.0, preparedPut);
+    
+    if (std::abs(actualPut - pricing2Put) > tolerance) {
+        std::cerr << "Pricing 2 put failed. ActualPut: " << actualPut << " Pricing 2 Put: " << pricing2Put << '\n';
+        return 1;
+    }
+
 
 
     return 0;

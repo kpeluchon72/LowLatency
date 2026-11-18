@@ -6,6 +6,7 @@ add_library(pricing_core
     workload.cpp
     pricing1.cpp
     benchmark.cpp
+    pricing2.cpp
 )
 target_include_directories(pricing_core
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
