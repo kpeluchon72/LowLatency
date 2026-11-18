@@ -4,6 +4,7 @@
 #include <chrono>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
 
 std::vector<BenchmarkSample> benchmarkPricing1(const Workload& workload, std::size_t timedRuns) {
     workload.validate();
@@ -50,6 +51,67 @@ std::vector<BenchmarkSample> benchmarkPricing1(const Workload& workload, std::si
 
 
     return samples;
+}
+
+BenchmarkSummary summarizeSamples(const std::vector<BenchmarkSample>& samples) {
+    if (samples.empty()) {
+        throw std::invalid_argument(
+            "Cannot summarize empty benchmark samples");
+    }
+    
+    std::vector<double> seconds;
+    std::vector<double> throughputs;
+
+    seconds.reserve(samples.size());
+    throughputs.reserve(samples.size());
+
+    double secondsSum{0.0};
+    const double expectedChecksum = samples.front().checksum;
+
+
+    for (const BenchmarkSample& sample : samples) {
+        seconds.push_back(sample.seconds);
+        throughputs.push_back(sample.calculationsPerSecond);
+        secondsSum += sample.seconds;
+
+        if (sample.checksum != expectedChecksum) {
+            throw std::runtime_error(
+                "Benchmark checksums do not match");
+        }
+    }
+
+    std::sort(seconds.begin(), seconds.end());
+    std::sort(throughputs.begin(), throughputs.end());
+
+    const double meanSeconds = secondsSum / static_cast<double>(samples.size());
+
+    const std::size_t middle = samples.size() / 2;
+
+    double medianSeconds{0.0};
+    double medianThroughput{0.0};   
+
+    if (samples.size() % 2 == 0) {
+        medianSeconds =
+            (seconds[middle - 1] + seconds[middle]) / 2.0;
+
+        medianThroughput =
+            (throughputs[middle - 1] + throughputs[middle]) / 2.0;
+    } else {
+        medianSeconds = seconds[middle];
+        medianThroughput = throughputs[middle];
+    }
+
+    return BenchmarkSummary{
+        seconds.front(),
+        meanSeconds,
+        medianSeconds,
+        seconds.back(),
+        medianThroughput,
+        expectedChecksum
+    };
+
 
 
 }
+
+

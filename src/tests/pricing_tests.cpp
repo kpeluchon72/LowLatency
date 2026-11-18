@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "workload.hpp"
 #include <vector>
+#include "benchmark.hpp"
 
 int main() {
     constexpr double tolerance = 1e-9;
@@ -105,6 +106,108 @@ int main() {
         }
     }
 
+
+    const std::vector<BenchmarkSample> syntheticSamples{
+        {3.0, 42.0, 30.0},
+        {1.0, 42.0, 10.0},
+        {2.0, 42.0, 20.0}
+    };
+
+    const BenchmarkSummary syntheticSummary1 = summarizeSamples(syntheticSamples);
+
+    if (std::abs(syntheticSummary1.minimumSeconds - 1.0)
+    > tolerance)
+    {
+        std::cerr << "Summary minimum test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary1.meanSeconds - 2.0)
+        > tolerance)
+    {
+        std::cerr << "Summary mean test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary1.medianSeconds - 2.0)
+        > tolerance)
+    {
+        std::cerr << "Summary median test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary1.maximumSeconds - 3.0)
+        > tolerance)
+    {
+        std::cerr << "Summary maximum test failed\n";
+        return 1;
+    }
+
+    if (std::abs(
+            syntheticSummary1.medianCalculationsPerSecond - 20.0)
+        > tolerance)
+    {
+        std::cerr << "Summary median throughput test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary1.checksum - 42.0)
+        > tolerance)
+    {
+        std::cerr << "Summary checksum test failed\n";
+        return 1;
+    }
+
+    const std::vector<BenchmarkSample> evenSamples{
+        {4.0, 42.0, 40.0},
+        {1.0, 42.0, 10.0},
+        {3.0, 42.0, 30.0},
+        {2.0, 42.0, 20.0}
+    };
+    const BenchmarkSummary syntheticSummary2 = summarizeSamples(evenSamples);
+
+    if (std::abs(syntheticSummary2.minimumSeconds - 1.0)
+    > tolerance)
+    {
+        std::cerr << "Summary minimum test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary2.meanSeconds - 2.5)
+        > tolerance)
+    {
+        std::cerr << "Summary mean test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary2.medianSeconds - 2.5)
+        > tolerance)
+    {
+        std::cerr << "Summary median test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary2.maximumSeconds - 4.0)
+        > tolerance)
+    {
+        std::cerr << "Summary maximum test failed\n";
+        return 1;
+    }
+
+    if (std::abs(
+            syntheticSummary2.medianCalculationsPerSecond - 25.0)
+        > tolerance)
+    {
+        std::cerr << "Summary median throughput test failed\n";
+        return 1;
+    }
+
+    if (std::abs(syntheticSummary2.checksum - 42.0)
+        > tolerance)
+    {
+        std::cerr << "Summary checksum test failed\n";
+        return 1;
+    }
 
 
     return 0;
