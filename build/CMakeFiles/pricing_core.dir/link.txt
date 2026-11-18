@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libpricing_core.a CMakeFiles/pricing_core.dir/workload.cpp.obj CMakeFiles/pricing_core.dir/pricing1.cpp.obj CMakeFiles/pricing_core.dir/benchmark.cpp.obj
+C:\msys64\ucrt64\bin\ranlib.exe libpricing_core.a
