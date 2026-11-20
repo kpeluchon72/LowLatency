@@ -78,7 +78,18 @@ Workload generateWorkload(const WorkloadConfig& config) {
                 static_cast<double>(config.optionCount - 1);
         }
 
-        strike = 80.0 +(120.0 - 80.0) * fraction;
+        // generate option properties in spread out range
+        // Strike:          80 to 120
+        // Expiry:          0.25 to 2 years
+        // Volatility:      10% to 50%
+        // Risk-free rate:  1% to 5%
+        // Dividend yield:  3% down to 0%
+
+        const double strike = 80.0 +(120.0 - 80.0) * fraction;
+        const double timeToExpiry = 0.25 + (2.0 - 0.25) * fraction;
+        const double volatility = 0.10 + (0.50 - 0.10) * fraction;
+        const double riskFreeRate = 0.01 + (0.05 - 0.01) * fraction;
+        const double dividendYield = 0.00 + (0.03 - 0.00) * (1.0 - fraction);
 
         if (i % 2 == 0) {
             type = OptionType::Call;
@@ -86,7 +97,14 @@ Workload generateWorkload(const WorkloadConfig& config) {
             type = OptionType::Put;
         }
 
-        Option option{type, strike, 1, 0.20, 0.05, 0.01};
+        Option option{
+            type, 
+            strike, 
+            timeToExpiry, 
+            volatility, 
+            riskFreeRate, 
+            dividendYield
+        };
         
         newWorkload.options.push_back(option);
     }

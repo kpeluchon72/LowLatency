@@ -81,7 +81,7 @@ int main() {
         return 1;
     }
 
-    WorkloadConfig config{2, 3};
+    WorkloadConfig config{64, 65};
     Workload workload = generateWorkload(config);
     std::vector<double> calculatedPrices(workload.calculationCount());
     pricing1::priceWorkload(workload, calculatedPrices);
