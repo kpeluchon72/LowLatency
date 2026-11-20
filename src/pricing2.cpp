@@ -1,6 +1,8 @@
 #include "pricing2.hpp"
 #include "pricing1.hpp"
 #include <cmath>
+#include <cstddef>
+#include <stdexcept>
 
 pricing2::PreparedOption pricing2::prepare(const Option& option) {
     double logStrike = std::log(option.strike);
@@ -25,3 +27,42 @@ double pricing2::price(double spot, const PreparedOption& option) {
         return put;
     }
 }
+
+std::vector<pricing2::PreparedOption> pricing2::prepareOptions(const std::vector<Option>& options) {
+    std::vector<PreparedOption> preparedOptions{};
+    preparedOptions.reserve(options.size());
+
+    for (const Option& option : options) {
+        preparedOptions.push_back(prepare(option));
+    }
+
+    return preparedOptions;
+}
+
+
+void pricing2::priceWorkload(
+    const Workload& workload, 
+    const std::vector<pricing2::PreparedOption>& preparedOptions, 
+    std::vector<double>& output) {
+
+    workload.validate();
+
+    if (preparedOptions.size() != workload.options.size()) {
+        throw std::invalid_argument(
+            "Prepared option count does not match workload");
+    }
+    
+    output.resize(workload.calculationCount());
+        
+    std::size_t index{0};
+
+    for (const PreparedOption& preparedOption : preparedOptions) {
+        for (double spot : workload.spotPrices) {
+            output[index] = pricing2::price(spot, preparedOption);
+            ++index;
+        }
+    }
+
+
+}
+
