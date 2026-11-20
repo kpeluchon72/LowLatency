@@ -2,6 +2,7 @@
 
 #include "workload.hpp"
 #include <cstddef>
+#include <string_view>
 #include <vector>
 
 struct BenchmarkSample {
@@ -11,7 +12,7 @@ struct BenchmarkSample {
 };
 
 std::vector<BenchmarkSample> benchmarkPricing1(const Workload& workload, std::size_t timedRuns);
-
+std::vector<BenchmarkSample> benchmarkPricing2(const Workload& workload, std::size_t timedRuns);
 struct BenchmarkSummary {
     double minimumSeconds;
     double meanSeconds;
@@ -22,3 +23,7 @@ struct BenchmarkSummary {
 };
 
 BenchmarkSummary summarizeSamples(const std::vector<BenchmarkSample>& samples);
+
+void displaySummary(
+    std::string_view name,
+    const BenchmarkSummary& summary);

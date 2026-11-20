@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstddef>
 #include <iostream>
 #include "option.hpp"
 #include "pricing1.hpp"
@@ -105,6 +106,58 @@ int main() {
 
             return 1;
         }
+    }
+
+    const std::vector<pricing2::PreparedOption> preparedOptions =
+        pricing2::prepareOptions(workload.options);
+
+    std::vector<double> pricing2Prices(
+        workload.calculationCount());
+
+    pricing2::priceWorkload(
+        workload,
+        preparedOptions,
+        pricing2Prices);
+
+    if (pricing2Prices.size() != calculatedPrices.size()) {
+        std::cerr << "Pricing1/Pricing2 batch size mismatch: "
+                  << calculatedPrices.size()
+                  << " versus "
+                  << pricing2Prices.size()
+                  << '\n';
+        return 1;
+    }
+
+    double maximumAbsoluteError{0.0};
+
+    for (std::size_t index{0};
+         index < calculatedPrices.size();
+         ++index)
+    {
+        const double error =
+            std::abs(calculatedPrices[index] - pricing2Prices[index]);
+
+        if (error > maximumAbsoluteError) {
+            maximumAbsoluteError = error;
+        }
+
+        if (!std::isfinite(pricing2Prices[index])
+            || pricing2Prices[index] < -tolerance)
+        {
+            std::cerr << "Pricing2 produced invalid output at index "
+                      << index
+                      << ": "
+                      << pricing2Prices[index]
+                      << '\n';
+            return 1;
+        }
+    }
+
+    if (maximumAbsoluteError > tolerance) {
+        std::cerr << "Pricing1/Pricing2 maximum error: "
+                  << maximumAbsoluteError
+                  << '\n';
+        return 1;
     }
 
 
