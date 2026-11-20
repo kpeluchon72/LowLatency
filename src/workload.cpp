@@ -67,7 +67,6 @@ Workload generateWorkload(const WorkloadConfig& config) {
     newWorkload.spotPrices.reserve(config.spotCount);
     
     double fraction{0.0};
-    double strike{0.0};
     OptionType type;
     
 
