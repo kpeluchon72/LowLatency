@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <chrono>
+#include <cmath>
 
 
 struct CDFBenchmarkSample {
@@ -11,6 +12,105 @@ struct CDFBenchmarkSample {
     double checksum;
     double evaluationsPerSecond;
 };
+
+struct CDFBenchmarkSummary {
+    double minimumSeconds;
+    double meanSeconds;
+    double medianSeconds;
+    double maximumSeconds;
+    double medianEvaluationsPerSecond;
+    double nanosecondsPerEvaluation;
+    double checksum;
+};
+
+struct CDFAccuracySummary {
+    double maximumAbsoluteError;
+    double meanAbsoluteError;
+    double rootMeanSquaredError;
+    double inputAtMaximumError;
+    double maximumSymmetryError;
+    bool outputsInRange;
+    bool monotonic;
+};
+
+
+template <auto CandidateFunction, auto ReferenceFunction> 
+CDFAccuracySummary measureCDFAccuracy(const std::vector<double>& inputs) {
+
+    if (inputs.empty()) {
+        throw std::invalid_argument("CDF accuracy inputs cannot be empty");
+    }
+
+    double maximumAbsoluteError{0.0};
+    double absoluteErrorSum{0.0};
+    double squaredErrorSum{0.0};
+    double inputAtMaximumError{inputs.front()};
+    double maximumSymmetryError{0.0};
+
+    bool outputsInRange{true};
+    bool monotonic{true};
+    bool firstOutput{true};
+
+    double previousActual{0.0};
+
+    for (double x : inputs) {
+        const double expected = ReferenceFunction(x);
+        const double actual = CandidateFunction(x);
+
+        if (!std::isfinite(actual)) {
+            outputsInRange = false;
+            monotonic = false;
+        }
+
+        const double error = std::abs(actual - expected);
+
+        absoluteErrorSum += error;
+        squaredErrorSum += error * error;
+
+    
+        if (error > maximumAbsoluteError) {
+            maximumAbsoluteError = error;
+            inputAtMaximumError = x;
+        }
+
+        if (actual < 0.0 || actual > 1.0) {
+            outputsInRange = false;
+        }
+
+        if (!firstOutput && actual < previousActual) {
+            monotonic = false;
+        }
+
+        const double symmetryError = std::abs(CandidateFunction(x) + CandidateFunction(-x) - 1.0);
+
+        if (symmetryError > maximumSymmetryError) {
+            maximumSymmetryError = symmetryError;
+        }
+
+        previousActual = actual;
+        firstOutput = false;
+
+    }
+
+    const double inputCount = static_cast<double>(inputs.size());
+    const double meanAbsoluteError = absoluteErrorSum / inputCount;
+    const double rootMeanSquaredError = std::sqrt(squaredErrorSum / inputCount);
+
+    return CDFAccuracySummary{
+        maximumAbsoluteError,
+        meanAbsoluteError,
+        rootMeanSquaredError,
+        inputAtMaximumError,
+        maximumSymmetryError,
+        outputsInRange,
+        monotonic
+    };
+    
+}
+
+
+
+CDFBenchmarkSummary summarizeCDFSamples(const std::vector<CDFBenchmarkSample>& samples);
 
 template <auto CDFFunction> std::vector<CDFBenchmarkSample> benchmarkCDF(
     const std::vector<double>& inputs,
@@ -73,6 +173,7 @@ template <auto CDFFunction> std::vector<CDFBenchmarkSample> benchmarkCDF(
     return samples;
 
 }
+
 
 
 std::vector<double> generateCDFInputs(

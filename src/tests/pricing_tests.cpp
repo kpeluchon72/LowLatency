@@ -346,6 +346,21 @@ int main() {
         }
     }
 
+    const CDFAccuracySummary referenceAccuracy = measureCDFAccuracy<
+        normalCDF::reference,
+        normalCDF::reference>(cdfTestInputs);
+    
+    if (referenceAccuracy.maximumAbsoluteError > tolerance
+        || referenceAccuracy.meanAbsoluteError > tolerance
+        || referenceAccuracy.rootMeanSquaredError > tolerance
+        || referenceAccuracy.maximumSymmetryError > tolerance
+        || !referenceAccuracy.outputsInRange
+        || !referenceAccuracy.monotonic)
+    {
+        std::cerr << "Reference CDF accuracy test failed\n";
+        return 1;
+    }
+
 
     return 0;
 }
