@@ -1,9 +1,8 @@
 #include "pricing1.hpp"
+#include "normal_cdf.hpp"
+
 #include <cmath>
 
-double pricing1::normalCDF(double x) {
-    return 0.5 * std::erfc(-x / std::sqrt(2.0));
-}
 
 
 double pricing1::price(double spot, const Option& option) {
@@ -17,14 +16,14 @@ double pricing1::price(double spot, const Option& option) {
     double d2 = d1 - SIGMA_SQRT;
 
     if (option.type == OptionType::Call) {
-        double call = spot * std::exp(-option.dividendYield * option.timeToExpiry) * normalCDF(d1)
-                        - option.strike * std::exp(-option.riskFreeRate * option.timeToExpiry) * normalCDF(d2);
+        double call = spot * std::exp(-option.dividendYield * option.timeToExpiry) * normalCDF::reference(d1)
+                        - option.strike * std::exp(-option.riskFreeRate * option.timeToExpiry) * normalCDF::reference(d2);
 
         return call;
 
     } else {
-        double put = option.strike * std::exp(-1 * option.riskFreeRate * option.timeToExpiry) * normalCDF(-d2)
-                        - spot * std::exp(-1 * option.dividendYield * option.timeToExpiry) * normalCDF(-d1);
+        double put = option.strike * std::exp(-1 * option.riskFreeRate * option.timeToExpiry) * normalCDF::reference(-d2)
+                        - spot * std::exp(-1 * option.dividendYield * option.timeToExpiry) * normalCDF::reference(-d1);
         
         return put;
     }

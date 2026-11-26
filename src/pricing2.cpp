@@ -1,5 +1,7 @@
 #include "pricing2.hpp"
-#include "pricing1.hpp"
+#include "normal_cdf.hpp"
+
+
 #include <cmath>
 #include <cstddef>
 #include <stdexcept>
@@ -20,10 +22,10 @@ double pricing2::price(double spot, const PreparedOption& option) {
     double d2 = d1 - option.sigmaSqrtTime;
     
     if (option.type == OptionType::Call) {
-        double call = (spot * option.dividendDiscount * pricing1::normalCDF(d1)) - (option.discountedStrike * pricing1::normalCDF(d2));
+        double call = (spot * option.dividendDiscount * normalCDF::reference(d1)) - (option.discountedStrike * normalCDF::reference(d2));
         return call;
     } else {
-        double put = (option.discountedStrike * pricing1::normalCDF(-d2)) - (spot * option.dividendDiscount * pricing1::normalCDF(-d1));
+        double put = (option.discountedStrike * normalCDF::reference(-d2)) - (spot * option.dividendDiscount * normalCDF::reference(-d1));
         return put;
     }
 }
