@@ -8,6 +8,9 @@
 #include <vector>
 #include "benchmark.hpp"
 #include "pricing2.hpp"
+#include "cdf_benchmark.hpp"
+#include "normal_cdf.hpp"
+
 
 int main() {
     constexpr double tolerance = 1e-9;
@@ -289,7 +292,59 @@ int main() {
         std::cerr << "Pricing 2 put failed. ActualPut: " << actualPut << " Pricing 2 Put: " << pricing2Put << '\n';
         return 1;
     }
+    
 
+    const std::vector<double> cdfTestInputs = generateCDFInputs(5, -2.0, 2.0);
+
+    const std::vector<double> expectedCDFInputs{
+        -2.0,
+        -1.0,
+        0.0,
+        1.0,
+        2.0
+    };
+
+    if (cdfTestInputs.size() != expectedCDFInputs.size()) {
+        std::cerr << "CDF input count test failed\n";
+        return 1;
+    }
+
+    for (std::size_t index{0};
+        index < cdfTestInputs.size();
+        ++index)
+    {
+        if (std::abs(
+                cdfTestInputs[index] - expectedCDFInputs[index])
+            > tolerance)
+        {
+            std::cerr << "CDF input generation failed at index "
+                    << index << '\n';
+            return 1;
+        }
+    }
+
+    const std::vector<double> cdfBenchmarkInputs = generateCDFInputs(100'000, -8.0, 8.0);
+
+    const std::vector<CDFBenchmarkSample> cdfSamples =
+        benchmarkCDF<normalCDF::reference>(
+            cdfBenchmarkInputs,
+            3);
+
+    if (cdfSamples.size() != 3) {
+        std::cerr << "CDF benchmark sample count failed\n";
+        return 1;
+    }
+
+    
+    for (const CDFBenchmarkSample& sample : cdfSamples) {
+        if (sample.seconds <= 0.0
+            || sample.evaluationsPerSecond <= 0.0
+            || !std::isfinite(sample.checksum))
+        {
+            std::cerr << "CDF benchmark produced invalid sample\n";
+            return 1;
+        }
+    }
 
 
     return 0;

@@ -8,6 +8,7 @@ add_library(pricing_core
     benchmark.cpp
     pricing2.cpp
     normal_cdf.cpp
+    cdf_benchmark.cpp
 )
 target_include_directories(pricing_core
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
