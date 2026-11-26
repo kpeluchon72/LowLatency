@@ -1,5 +1,8 @@
 #include "cdf_benchmark.hpp"
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
 
 std::vector<double> generateCDFInputs(std::size_t count, double minimum, double maximum) {
@@ -87,4 +90,79 @@ CDFBenchmarkSummary summarizeCDFSamples(const std::vector<CDFBenchmarkSample>& s
         nanosecondsPerEvaluation,
         expectedChecksum
     };
+}
+
+
+void displayCDFComparisonHeader() {
+    constexpr int nameWidth = 24;
+    constexpr int numberWidth = 15;
+    constexpr int validWidth = 10;
+    constexpr int tableWidth =
+        nameWidth + (numberWidth * 6) + validWidth;
+
+    std::cout << std::left
+              << std::setw(nameWidth) << "Function"
+              << std::right
+              << std::setw(numberWidth) << "ns/eval"
+              << std::setw(numberWidth) << "M eval/s"
+              << std::setw(numberWidth) << "Speedup"
+              << std::setw(numberWidth) << "Max error"
+              << std::setw(numberWidth) << "Mean error"
+              << std::setw(numberWidth) << "RMSE"
+              << std::setw(validWidth) << "Valid"
+              << '\n'
+              << std::string(tableWidth, '-')
+              << '\n';
+
+}
+
+
+void displayCDFComparison(std::string_view name,
+    const CDFBenchmarkSummary& benchmark,
+    const CDFAccuracySummary& accuracy,
+    double referenceEvaluationsPerSecond) {
+
+    if (referenceEvaluationsPerSecond <= 0.0) {
+        throw std::invalid_argument(
+            "Reference CDF throughput must be positive");
+    }
+
+    constexpr int nameWidth = 24;
+    constexpr int numberWidth = 15;
+    constexpr int validWidth = 10;
+
+    const double speedup =
+        benchmark.medianEvaluationsPerSecond
+        / referenceEvaluationsPerSecond;
+
+    const double millionsPerSecond =
+        benchmark.medianEvaluationsPerSecond
+        / 1'000'000.0;
+
+    const bool valid =
+        accuracy.outputsInRange
+        && accuracy.monotonic;
+
+    std::cout << std::left
+              << std::setw(nameWidth) << name
+              << std::right
+              << std::fixed << std::setprecision(2)
+              << std::setw(numberWidth)
+              << benchmark.nanosecondsPerEvaluation
+              << std::setw(numberWidth)
+              << millionsPerSecond
+              << std::setw(numberWidth - 1)
+              << speedup << 'x'
+              << std::scientific << std::setprecision(3)
+              << std::setw(numberWidth)
+              << accuracy.maximumAbsoluteError
+              << std::setw(numberWidth)
+              << accuracy.meanAbsoluteError
+              << std::setw(numberWidth)
+              << accuracy.rootMeanSquaredError
+              << std::setw(validWidth)
+              << (valid ? "yes" : "no")
+              << '\n'
+              << std::defaultfloat;
+
 }

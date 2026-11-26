@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <cmath>
+#include <string_view>
 
 
 struct CDFBenchmarkSample {
@@ -109,7 +110,6 @@ CDFAccuracySummary measureCDFAccuracy(const std::vector<double>& inputs) {
 }
 
 
-
 CDFBenchmarkSummary summarizeCDFSamples(const std::vector<CDFBenchmarkSample>& samples);
 
 template <auto CDFFunction> std::vector<CDFBenchmarkSample> benchmarkCDF(
@@ -174,6 +174,13 @@ template <auto CDFFunction> std::vector<CDFBenchmarkSample> benchmarkCDF(
 
 }
 
+
+void displayCDFComparisonHeader();
+
+void displayCDFComparison(std::string_view name, 
+    const CDFBenchmarkSummary& benchmark,
+    const CDFAccuracySummary& accuracy,
+    double referenceEvaluationsPerSecond);
 
 
 std::vector<double> generateCDFInputs(
