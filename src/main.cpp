@@ -50,6 +50,18 @@ int main() {
             normalCDF::reference,
             normalCDF::reference>(cdfInputs);
 
+    const std::vector<CDFBenchmarkSample> approximationSamples = 
+    benchmarkCDF<normalCDF::abramowitzStegun>(cdfInputs, 10);
+
+    const CDFBenchmarkSummary approximationBenchmark =
+        summarizeCDFSamples(approximationSamples);
+
+    const CDFAccuracySummary approximationAccuracy =
+        measureCDFAccuracy<
+            normalCDF::abramowitzStegun,
+            normalCDF::reference>(cdfInputs);
+    
+
     std::cout << "\nNormal CDF comparison\n"
               << "Inputs: " << cdfInputs.size()
               << " from -8 to 8\n\n";
@@ -60,6 +72,12 @@ int main() {
         "std::erfc reference",
         referenceBenchmark,
         referenceAccuracy,
+        referenceBenchmark.medianEvaluationsPerSecond);
+    
+    displayCDFComparison(
+        "Abramowitz-Stegun",
+        approximationBenchmark,
+        approximationAccuracy,
         referenceBenchmark.medianEvaluationsPerSecond);
 
     return 0;

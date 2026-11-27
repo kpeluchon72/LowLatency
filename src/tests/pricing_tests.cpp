@@ -12,6 +12,16 @@
 #include "normal_cdf.hpp"
 
 
+double decreasingTestCDF(double x) {
+    return 1.0 / (1.0 + std::exp(x));
+}
+
+double outOfRangeTestCDF(double) {
+    return 1.5;
+}
+
+
+
 int main() {
     constexpr double tolerance = 1e-9;
     constexpr double expectedCall = 6.594025324130;
@@ -358,6 +368,33 @@ int main() {
         || !referenceAccuracy.monotonic)
     {
         std::cerr << "Reference CDF accuracy test failed\n";
+        return 1;
+    }
+
+    const CDFAccuracySummary decreasingAccuracy =
+        measureCDFAccuracy<
+            decreasingTestCDF,
+            normalCDF::reference>(cdfTestInputs);
+
+    if (decreasingAccuracy.monotonic) {
+        std::cerr
+            << "CDF monotonicity detector failed\n";
+        return 1;
+    }
+
+    if (!decreasingAccuracy.outputsInRange) {
+        std::cerr
+            << "Decreasing test CDF should remain in range\n";
+        return 1;
+    }
+    
+    const CDFAccuracySummary outOfRangeAccuracy =
+        measureCDFAccuracy<
+            outOfRangeTestCDF,
+            normalCDF::reference>(cdfTestInputs);
+
+    if (outOfRangeAccuracy.outputsInRange) {
+        std::cerr << "CDF range detector failed\n";
         return 1;
     }
 
